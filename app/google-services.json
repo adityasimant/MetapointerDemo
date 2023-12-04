@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "32610196577",
+    "project_id": "metapointerdemo",
+    "storage_bucket": "metapointerdemo.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:32610196577:android:39162998f8ce6d2aed9e20",
+        "android_client_info": {
+          "package_name": "com.example.metapointerdemo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvVN8I6R8DMXSwu5bM7vzVU7BGPGixf0I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
