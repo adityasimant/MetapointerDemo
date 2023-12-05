@@ -17,10 +17,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 public class MoneyTransfer extends AppCompatActivity {
 
     ActivityMoneyTransferBinding binding;
     private DatabaseReference userRef;
+    private DatabaseReference transactionsRef;
 
 
     @Override
@@ -51,11 +56,10 @@ public class MoneyTransfer extends AppCompatActivity {
             }
 
             int amount = Integer.parseInt(amountStr);
-
-            // Reference to the sender's data
-            String number = senderPhone;
+            String number = currentUser.getPhoneNumber();
             String num = number.substring(3, number.length());
             userRef = FirebaseDatabase.getInstance().getReference().child("Users").child(num);
+            transactionsRef = FirebaseDatabase.getInstance().getReference().child("Transactions");
 
             userRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -64,11 +68,9 @@ public class MoneyTransfer extends AppCompatActivity {
                         int senderBalance = Integer.parseInt(dataSnapshot.child("amount").getValue(String.class));
 
                         if (senderBalance >= amount) {
-                            // Deduct the amount from sender's balance
                             int newSenderBalance = senderBalance - amount;
                             userRef.child("amount").setValue(String.valueOf(newSenderBalance));
 
-                            // Reference to the receiver's data
                             DatabaseReference receiverRef = FirebaseDatabase.getInstance().getReference().child("Users").child(receiverPhone);
 
                             receiverRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -76,10 +78,11 @@ public class MoneyTransfer extends AppCompatActivity {
                                 public void onDataChange(DataSnapshot receiverSnapshot) {
                                     if (receiverSnapshot.exists()) {
                                         int receiverBalance = Integer.parseInt(receiverSnapshot.child("amount").getValue(String.class));
-
-                                        // Add the amount to receiver's balance
                                         int newReceiverBalance = receiverBalance + amount;
                                         receiverRef.child("amount").setValue(String.valueOf(newReceiverBalance));
+
+                                        // Record the transaction in the Transactions node
+                                        recordTransaction(senderPhone, receiverPhone, amount);
 
                                         Toast.makeText(MoneyTransfer.this, "Money transferred successfully", Toast.LENGTH_SHORT).show();
                                     } else {
@@ -107,4 +110,14 @@ public class MoneyTransfer extends AppCompatActivity {
             });
         }
     }
+    private void recordTransaction(String senderPhone, String receiverPhone, int amount) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        String timestamp = dateFormat.format(new Date());
+
+        String transactionKey = transactionsRef.push().getKey();
+        Transaction transaction = new Transaction(senderPhone, receiverPhone, amount, timestamp);
+
+        transactionsRef.child(transactionKey).setValue(transaction);
+    }
+
 }
